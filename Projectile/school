@@ -1,0 +1,48 @@
+import sympy
+from sympy import symbols, diff, sin, cos, pi, sqrt
+
+P = symbols('P')
+L = symbols('L')
+E = symbols('E')
+b = symbols('b')
+h = symbols('h')
+theta = symbols('theta')
+
+# Fixed: Added proper exponentiation and corrected the expressions
+Iz_ = ((b * h**3) / 12) * 10**(-12)  # Moment of inertia about z-axis
+Iy_ = ((h * b**3) / 12) * 10**(-12)  # Moment of inertia about y-axis
+
+del_L = 0.0005
+del_b = 0.05 * 10**(-3)
+del_h = 0.05 * 10**(-3)
+del_theta = 0.5
+del_E = 0.5 * 10**9  # Fixed: Added multiplication operator
+
+n = 6
+del_P = n * 0.5
+
+# Fixed: Added multiplication operators and corrected expressions
+Vy = -P * (L**3) * (((cos(theta * pi / 180))**2) / (Iz_) + ((sin(theta * pi / 180))**2) / (Iy_)) / (3 * E)
+Vz = -P * (L**3) * (sin(2 * (theta * pi / 180))) * ((1 / Iy_) - (1 / Iz_)) / (6 * E)
+
+# Fixed: Added proper exponentiation and multiplication operators
+error_Vy = sqrt(
+    (del_L**2) * ((diff(Vy, L))**2) + 
+    (del_P**2) * ((diff(Vy, P))**2) + 
+    (del_theta**2) * ((diff(Vy, theta))**2) + 
+    (del_E**2) * ((diff(Vy, E))**2) + 
+    (del_b**2) * ((diff(Vy, b))**2) + 
+    (del_h**2) * ((diff(Vy, h))**2)
+)
+
+# Fixed: Corrected the substitution values
+result = error_Vy.subs([
+    (L, 0.501), 
+    (b, 19.7 * 10**(-3)),  # Assuming b is in meters (converted from mm)
+    (h, 10 * 10**(-3)),    # Assuming h is in meters (converted from mm)
+    (E, 170 * 10**9),      # Young's modulus in Pa
+    (theta, 80), 
+    (P, n * 5)
+])
+
+print('Vy error =', (result * 10**3).evalf())  # Convert to mm by multiplying by 1000
